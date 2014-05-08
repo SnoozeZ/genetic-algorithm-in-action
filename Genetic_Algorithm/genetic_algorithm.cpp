@@ -4,16 +4,17 @@
 #include <ctime>
 #include <iomanip>
 #include <algorithm>
+#include <fstream>
 using namespace std;
 
 #define POPUNATION 100			//总假设数
-#define CROSS_PROB 0.7			//交叉的概率
+#define CROSS_PROB 0.85			//交叉的概率
 #define BIT_AMOUNT 30			//每个假设的位数
 #define VARIATION_PROB 0.05		//变异的概率
-#define random(x) (rand()%x)
 #define TIMES 1000				//遗传代数
 #define INT_AMOUNT 3			//整数位数
 #define DE_AMOUNT 27			//小数位数
+#define random(x) (rand()%x)
 
 struct assumption{
 	assumption(){
@@ -23,17 +24,20 @@ struct assumption{
 		prob = 0;
 	}
 	bool *bit;					//节省空间 true代表1 false代表0
-	double fit;
-	double prob;
+	double fit;					//适应度
+	double prob;				//选中概率
 	bool chosen1;				//被选作直接遗传的了
 	bool chosen2;				//被选作交叉的了
-};
-double bToD(bool *bit);
-double calFit(assumption ass);
-bool compare(const assumption & ass1,const assumption & ass2);
-void calAssProb(vector <assumption> &assSet);
-
-vector <assumption> assSet(POPUNATION);
+};																					
+void init();														//初始化假设 随机赋予值
+double bToD(bool *bit);												//二进制bool数组转化为十进制double
+double calFit(assumption ass);										//计算适应度
+void calAssProb(vector <assumption> &assSet);						//计算假设被选择的概率
+void crossAssump(assumption &ass1,assumption &ass2);				//两个假设交叉		
+vector <assumption> chooseNextGeneration(vector<assumption> assSet);//生成下一代
+bool compare(const assumption & ass1,const assumption & ass2);		//sort()辅助函数
+void geneitcAlg();														//遗传算法执行
+vector <assumption> assSet(POPUNATION);								//假设vector
 
 void init(){
 	cout<<"开始初始化"<<endl;
@@ -192,7 +196,8 @@ vector <assumption> chooseNextGeneration(vector<assumption> assSet){
 
 	return newAssSet;
 }
-void geneitc(){
+void geneitcAlg(){
+	ofstream out("output.txt");
 	double maxFit=-999;
 	double maxX=0;
 	for(int time=0;time<TIMES;time++){	
@@ -204,8 +209,10 @@ void geneitc(){
 
 		}
 		assSet = chooseNextGeneration(assSet);
-		//cout<<"第"<<time<<"次变异，当前最大的y值为: "<<maxFit<<",x为: "<<maxX<<endl;
+	//	cout<<"第"<<time<<"次变异，当前最大的y值为: "<<setprecision(10)<<maxFit<<",x为: "<<setprecision(10)<<maxX<<endl;
+	//	out<<setprecision(10)<<maxFit<<endl;
 	}
+	out.close();
 	cout<<"第"<<TIMES<<"次遗传，当前最大的y值为: "<<setprecision(10)<<maxFit<<",x为: "<<setprecision(10)<<maxX<<endl;
 }
 bool compare(const assumption & ass1,const assumption & ass2){
@@ -215,7 +222,7 @@ bool compare(const assumption & ass1,const assumption & ass2){
 int main(){
 	 srand((int)time(0));
 	 init();
-	 geneitc();
+	 geneitcAlg();
 
 	 system("pause");
 }
